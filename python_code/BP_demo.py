@@ -1,5 +1,6 @@
 import numpy as np
 from simple_BP import *
+import pandas as pd
 
 table = np.array(pd.read_csv("iris.data", sep=',', header=None))
 data = table[:, 0:-1]
