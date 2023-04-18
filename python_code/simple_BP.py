@@ -5,7 +5,7 @@ import random as rd
 
 class BP:
     def __init__(self, layers, neures_array, AcFunc_list, Lambda):
-        self.layers = layers + 1 # 包含上输入层
+        self.layers = layers + 1 # add input layer
         self.neures_array = neures_array
         self.AcFunc_list = AcFunc_list
         self.Lambda = Lambda
@@ -14,7 +14,7 @@ class BP:
     def initialise(self, data, label,trapro,valpro,process):
         X=self.DataDivider(data,label,trapro,valpro,process)
         n, p = np.shape(X.train)
-        # 补全信息
+        # to perfect the information
         if len(self.AcFunc_list)==self.layers-1:
             self.neures_array = np.concatenate(([[p]], self.neures_array), axis=1)[0]
             self.AcFunc_list.insert(0, None)
@@ -23,7 +23,7 @@ class BP:
         self.n = n
         self.Y = self.oneHotEncode(X.tralabel)
 
-        # 初始化数组
+        # initialize the array
         self.W_list = [None]
         for l in range(1, self.layers):
             # locals()['W'+str(l)]=np.random.normal(0,np.sqrt(2/self.neures_array[l-1]),[self.neures_array[l],self.neures_array[l-1]]) # He initiation
@@ -38,47 +38,47 @@ class BP:
             locals()['b' + str(l)] = np.zeros((1, self.neures_array[l]))
             self.b_list.append(locals()['b' + str(l)])
 
-        self.a_list = [X.train]  # 多行存储
+        self.a_list = [X.train]  # store with multi-row array
         for l in range(1, self.layers):
             locals()['a' + str(l)] = np.zeros([n, self.neures_array[l]])
             self.a_list.append(locals()['a' + str(l)])
 
-        self.delta_list = [None]  # 多行储存
+        self.delta_list = [None]  # store with multi-row array
         for l in range(1, self.layers):
             locals()['delta' + str(l)] = np.zeros((1, self.neures_array[l]))
             self.delta_list.append(locals()['delta' + str(l)])
 
-        self.z_list = [None]  # 多行存储
+        self.z_list = [None]  # store with multi-row array
         for l in range(1, self.layers):
             locals()['z' + str(l)] = np.zeros([n, self.neures_array[l]])
             self.z_list.append(locals()['z' + str(l)])
         return True
 
     def iterate(self, repeatTime, alpha):
-        epsi = 1e-7  # 防止1/的地方NAN
+        epsi = 1e-7  # avoid the nan with dividing 0
         val_acc_list = [0]
         self.nan_tag = 0
         for time in range(repeatTime):
             rand_list = rd.sample(range(self.n), self.n)
             self.a_list[0] = self.a_list[0][rand_list]
             self.Y = self.Y[rand_list]
-            # 前馈计算a
+            # Feed-forward Calculation a
             for i in range(self.n):
                 for l in range(1, self.layers):
                     self.a_list[l][i] = (self.AcFunc_dict[self.AcFunc_list[l]](self, np.reshape(self.a_list[l - 1][i],[1, self.neures_array[l - 1]]) @ self.W_list[l].T + np.reshape(self.b_list[l], [1, self.neures_array[l]])))
 
-            # 对此样本进行迭代
+            # iterate
             for i in range(self.n):
-                # 计算各层的净输入
+                # calculate the pure input of each layer of the i-th sample
                 for l in range(1, self.layers):
                     self.z_list[l][i] = self.a_list[l - 1][i] @ self.W_list[l].T + np.reshape(self.b_list[l],[1,-1])
-                # 计算各层的 delta
+                # calculate the delta of each layer
                 self.delta_list[-1] = -(self.AcFunc_dict['d' + self.AcFunc_list[-1]](self, self.z_list[-1][i]) @ np.diag((1 / self.AcFunc_dict[self.AcFunc_list[-1]](self, self.z_list[-1][i] + epsi)).reshape(1,-1)[0]) @ np.reshape(self.Y[i],[-1,1])).T
                 for l in range(1, self.layers - 1).__reversed__():
                     self.delta_list[l] = (
                                 self.AcFunc_dict['d' + self.AcFunc_list[l]](self, self.z_list[l][i]) @ self.W_list[
                             l + 1].T @ self.delta_list[l + 1].T).T
-                # 计算各层参数的导数
+                # calculate the derivatives of each layer
                 self.dW_list = [None]
                 for l in range(1, self.layers):
                     locals()['dW' + str(l)] = np.zeros([self.neures_array[l], self.neures_array[l - 1]])
@@ -92,7 +92,7 @@ class BP:
                     self.db_list.append(locals()['db' + str(l)])
                 for l in range(1, self.layers):
                     self.db_list[l] = self.delta_list[l]
-                # 更新各层参数
+                # update the parameters on each layer
                 for l in range(1, self.layers):
                     self.W_list[l] = self.W_list[l] - alpha * self.dW_list[l]
                     self.b_list[l] = self.b_list[l] - alpha * self.db_list[l]
@@ -126,7 +126,7 @@ class BP:
     def loss(self):
         return -np.trace(self.Y @ self.a_list[-1].T) / np.shape(self.Y)[0]
 
-    def oneHotEncode(self, label):  # 独热编码矩阵,n*c
+    def oneHotEncode(self, label):  # one-hot encoding matrix with size of n*c
         if len(np.shape(label)) == 2:
             label = np.reshape(label, [1, np.shape(label)[0] * np.shape(label)[1]])[0]
         c = len(np.unique(label))
@@ -165,7 +165,7 @@ class BP:
         return np.diag(x)
 
     def zscore(self,data):
-        # data是行向量矩阵
+        # data is row sample matrix
         data = np.array(data, dtype=np.float64)
         data_mean = np.mean(data, axis=0)
         data_std = np.std(data, axis=0)
@@ -174,11 +174,11 @@ class BP:
 
     def DataDivider(self, data, label, trapro, valpro, process):
         '''
-        :param data: 行放样本
-        :param label: 列标签
-        :param trapro: 训练集比例
-        :param valpro: 训练集中验证集比例
-        :return: X.train行向量训练矩阵, X.tralabel无嵌套的行向量 X.test行向量测试矩阵 X.teslabel无嵌套的行向量
+        :param data: row-sample matrix
+        :param label: class label imformation
+        :param trapro: the proportion of training set
+        :param valpro: the proportion of valid set of the train set
+        :return: X.train, X.tralabel, X.test, X.teslabel, X.valid, X.vallabel
         '''
         class X_struct:
             def __init__(self, Xtrain, tralabel, Xtest, teslabel, Xvalid, vallabel):
@@ -201,10 +201,10 @@ class BP:
             ni = np.sum(label == i)
             tranum = int(ni * trapro)
             rand_list = np.array(rd.sample(range(0, ni), ni))
-            data_i = data[label == i] # 第i类的数据
-            train_part=data_i[rand_list[0:tranum], :] # 训练集部分的数据
-            valnum=int(tranum*valpro) # 验证样本个数
-            inner_rand_list=np.array(rd.sample(range(0, tranum), tranum)) # 训练集内部随机数列
+            data_i = data[label == i] # the samples of the i-th class
+            train_part=data_i[rand_list[0:tranum], :] # the samples of training set
+            valnum=int(tranum*valpro) # the number of valid samples
+            inner_rand_list=np.array(rd.sample(range(0, tranum), tranum)) # Random sequence within the training set
 
             valid=np.append(valid,train_part[inner_rand_list[0:valnum],:],axis=0)
             vallabel=np.append(vallabel,i*np.ones([1,valnum]),axis=1)
@@ -226,35 +226,5 @@ class BP:
 
     AcFunc_dict = {'ReLU': ReLU, 'dReLU': dReLU, 'Softmax': Softmax, 'dSoftmax': dSoftmax}
 
-# ===================================================================
-table = np.array(pd.read_csv("iris.data", sep=',', header=None))
-data = table[:, 0:-1]
-n = np.shape(data)[0]
-label_str = table[:, -1]
-label = -np.ones([n, 1])
-label[label_str == 'Iris-setosa'] = 0
-label[label_str == 'Iris-versicolor'] = 1
-label[label_str == 'Iris-virginica'] = 2
-label = label.reshape(1,-1)
 
-trapro = 0.8
-valpro=0.2/trapro
-process='zscore'
-Lambda = 0.1
-maxloop = 10000  # 迭代次数
-expe_time = 2
-alpha_list = np.arange(6,7) * (1e-3) # 0.006可以达到100%
-bp1 = BP(2, np.array([[4, 3]]), ['ReLU', 'Softmax'], Lambda)
-
-
-acc_table = np.zeros([len(alpha_list), expe_time])
-print(alpha_list)
-for i in range(expe_time):
-    for al in range(len(alpha_list)):
-        alpha = alpha_list[al]
-        bp1.initialise(data, label, trapro, valpro, process)
-        bp1.iterate(maxloop, alpha)
-        acc_table[al, i] = bp1.predict(bp1.X.test, bp1.X.teslabel)
-
-print(acc_table)
 
