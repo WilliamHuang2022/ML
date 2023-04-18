@@ -5,7 +5,7 @@
 A function for dividing data.
 
 ---
-### EuDist2.m constructW.m
+### EuDist2.m and constructW.m
 Two function to construct the W matrix of LPP.
 
 ---
