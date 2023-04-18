@@ -1,7 +1,7 @@
 # ML-code
 matlab code for machine learning
 ---
-**CRFS (l2, 1 Regularized correntropy for robust feature selection)**
+**CRFS ($l_{2, 1}$ Regularized correntropy for robust feature selection)**
 $$\min_{{U}}{1-\sum_{k=1}^{n} \exp (-\frac{||({X}^{T} {U}-{Y})^k||^2_2}{\sigma^2})+||{U}||_{2,1}}$$
 
 ---
