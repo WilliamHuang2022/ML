@@ -1,1 +1,1 @@
-This is a store for code for ML.
+This is a store for code of ML.
