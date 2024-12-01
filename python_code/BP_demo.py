@@ -1,5 +1,5 @@
 import numpy as np
-from simple_BP import *
+from BP import *
 import pandas as pd
 
 table = np.array(pd.read_csv("iris.data", sep=',', header=None))
